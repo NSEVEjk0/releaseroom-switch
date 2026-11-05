@@ -28,7 +28,7 @@ jobs:
       - run: python3 -m releaseroom.cli verify reports/reference-release.json
       - run: git --git-dir=/tmp/releaseroom-ci-reference/artifact.git fsck --strict
       - run: PYTHONPATH=. python3 scripts/write-reference.py
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
       - run: npm run check:web
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser

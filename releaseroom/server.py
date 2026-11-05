@@ -19,7 +19,7 @@ def serve(store,profiles,builder):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self,*args):pass
         def send(self,status,data,kind='application/json',headers=None):
-            if kind=='application/json':data=json.dumps(data).encode()
+            if kind=='application/json' and not isinstance(data,bytes):data=json.dumps(data).encode()
             elif isinstance(data,str):data=data.encode()
             self.send_response(status);self.send_header('Content-Type',kind);self.send_header('Content-Length',str(len(data)))
             self.send_header('X-Content-Type-Options','nosniff');self.send_header('Referrer-Policy','no-referrer')

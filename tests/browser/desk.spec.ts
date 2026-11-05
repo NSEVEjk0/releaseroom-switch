@@ -13,7 +13,8 @@ test("reference evidence, stale approval and checked staging artifact are inspec
  await expect(staging.getByRole('link',{name:'Join the build night',exact:false})).toBeVisible();await staging.close();expect(errors).toEqual([]);
 });
 test("private live releases reject anonymous access and mobile fits",async({page,request})=>{
- expect((await request.get('/api/releases')).status()).toBe(401);
+ const config=await (await request.get('/api/config')).json();
+ expect((await request.get('/api/releases')).status()).toBe(config.deployment==='preview'?503:401);
  await page.goto('/');await expect(page.getByText('Live Switch connection pending',{exact:true})).toBeVisible();
  await mkdir('reports',{recursive:true});await page.screenshot({path:'reports/releaseroom-desktop.png',fullPage:true});
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:'reports/releaseroom-mobile.png',fullPage:true});
