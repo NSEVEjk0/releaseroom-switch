@@ -1,0 +1,1 @@
+{"name":"releaseroom","private":true,"type":"module","description":"Turn a chat request into a checked release with approval tied to the exact artifact.","engines":{"node":">=22"},"scripts":{"test":"python3 -m unittest tests.test_core -v","check:web":"node --check web/app.js","test:browser":"playwright test"},"devDependencies":{"@playwright/test":"1.63.0"}}

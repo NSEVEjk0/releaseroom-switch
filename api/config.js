@@ -1,0 +1,1 @@
+export default function handler(req,res){res.setHeader("Cache-Control","no-store");res.status(200).json({deployment:"preview",available:false,switch_connected:false,model_available:false,authenticated:false});}

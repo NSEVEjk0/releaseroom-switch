@@ -1,0 +1,112 @@
+{
+  "schema": "releaseroom-reference-v1",
+  "environment": "scripted-local-reference-no-Switch-no-AI",
+  "earlier": {
+    "digest": "d232554021eaedb1be8d270e16af71cda3adff44e6a4b2749ab3a2fe6f0b0494",
+    "revision": 3,
+    "content": {
+      "background": "#eff3e9",
+      "cta": "Build together",
+      "description": "A friendly place for people building something new.",
+      "foreground": "#17382e",
+      "headline": "Make room for your next idea.",
+      "link": "#join"
+    }
+  },
+  "stale_approval_rejection": "A current human approval is required.",
+  "release": {
+    "id": "2b29398a035e42babd74085e7583bb2d",
+    "revision": 4,
+    "request": "Use Join the build night instead.",
+    "requester": "fictional-example-reviewer",
+    "content": {
+      "background": "#eff3e9",
+      "cta": "Join the build night",
+      "description": "A friendly place for people building something new.",
+      "foreground": "#17382e",
+      "headline": "Make room for your next idea.",
+      "link": "#join"
+    },
+    "state": "published",
+    "created": 1793836800,
+    "report": {
+      "passed": true,
+      "policy_hash": "a5ea4af3fac31204a7a60b64a7ea5100d6ce1453cf0f6aa386a0a7acf2cef3f7",
+      "tests": [
+        {
+          "detail": "Only the six site-content fields are accepted.",
+          "name": "exact_content_schema",
+          "passed": true
+        },
+        {
+          "detail": "1\u201390 nonempty characters.",
+          "name": "headline_length",
+          "passed": true
+        },
+        {
+          "detail": "1\u2013240 nonempty characters.",
+          "name": "description_length",
+          "passed": true
+        },
+        {
+          "detail": "1\u201340 nonempty characters.",
+          "name": "cta_length",
+          "passed": true
+        },
+        {
+          "detail": "Two literal six-digit hex colors.",
+          "name": "hex_colors",
+          "passed": true
+        },
+        {
+          "detail": "WCAG contrast ratio 11.372; minimum 4.5.",
+          "name": "text_contrast",
+          "passed": true
+        },
+        {
+          "detail": "CTA stays at a supported local destination.",
+          "name": "fixed_destination",
+          "passed": true
+        }
+      ]
+    },
+    "manifest": {
+      "artifact_sha256": "c0c57491029e5dcc7b4b421bb99932ae1fa5da7852d48ec5af95c22a7848fdf6",
+      "content_sha256": "db2a67daf7a6b7373fa2217a302bf646f55f0331fa319ad18419730b908e9202",
+      "git_commit": "348a4d1211b797c00e7a7ff0dccf3da71ae5a1c2",
+      "id": "2b29398a035e42babd74085e7583bb2d",
+      "policy_sha256": "a5ea4af3fac31204a7a60b64a7ea5100d6ce1453cf0f6aa386a0a7acf2cef3f7",
+      "request_sha256": "5119dd61f7a29604098f2cb8c6c678d40f1abe2da94f7b74726289b491a62a89",
+      "revision": 4,
+      "schema": "releaseroom-release-v1",
+      "test_evidence_sha256": "6b02f85b26335c27da6b81257569239f2af7f20fcf56a7c35e826b79e2dc4821"
+    },
+    "digest": "3a0067d046c80f6d0d023ebd9dce2b01b235308ed7bb73b59fcf23805f74a38b",
+    "git_commit": "348a4d1211b797c00e7a7ff0dccf3da71ae5a1c2",
+    "approval": {
+      "actor": "fictional-example-reviewer",
+      "approved_at": 1793836800,
+      "digest": "3a0067d046c80f6d0d023ebd9dce2b01b235308ed7bb73b59fcf23805f74a38b",
+      "expires_at": 1793837700
+    },
+    "receipt": {
+      "artifact_sha256": "c0c57491029e5dcc7b4b421bb99932ae1fa5da7852d48ec5af95c22a7848fdf6",
+      "digest": "3a0067d046c80f6d0d023ebd9dce2b01b235308ed7bb73b59fcf23805f74a38b",
+      "git_commit": "348a4d1211b797c00e7a7ff0dccf3da71ae5a1c2",
+      "published_at": 1793836800,
+      "release_id": "2b29398a035e42babd74085e7583bb2d",
+      "revision": 4
+    },
+    "current_revision": 4
+  },
+  "receipt": {
+    "release_id": "2b29398a035e42babd74085e7583bb2d",
+    "revision": 4,
+    "digest": "3a0067d046c80f6d0d023ebd9dce2b01b235308ed7bb73b59fcf23805f74a38b",
+    "artifact_sha256": "c0c57491029e5dcc7b4b421bb99932ae1fa5da7852d48ec5af95c22a7848fdf6",
+    "git_commit": "348a4d1211b797c00e7a7ff0dccf3da71ae5a1c2",
+    "published_at": 1793836800
+  },
+  "artifact": "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Make room for your next idea.</title><style>body{margin:0;background:#eff3e9;color:#17382e;font-family:system-ui,sans-serif}main{max-width:850px;margin:12vh auto;padding:35px}h1{font-size:clamp(40px,7vw,72px);line-height:1.08;letter-spacing:-.05em}p{font-size:20px;line-height:1.6;max-width:580px}a{display:inline-block;color:inherit;border:1px solid;padding:15px 23px;margin-top:20px;border-radius:8px;text-decoration:none}</style></head><body><main><p>THE COMMUNITY / NEXT CHAPTER</p><h1>Make room for your next idea.</h1><p>A friendly place for people building something new.</p><a href=\"#join\">Join the build night \u2197</a><p id=\"join\" style=\"font-size:12px;margin-top:60px\">ReleaseRoom staging fixture. This page does not collect registrations.</p></main></body></html>",
+  "payload_sha256": "87e84fe1dee8f7216fb712f013c01ace4a9ac11d70bf82947f7be002e0a44b6f"
+}
