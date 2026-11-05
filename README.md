@@ -8,6 +8,8 @@ Useful for community landing pages, launch teams and internal announcements wher
 
 ## Try the recorded example
 
+Open the [ReleaseRoom desk](https://releaseroom-switch.vercel.app). The [verification run](https://github.com/NSEVEjk0/releaseroom-switch/actions/runs/41944197715) includes state/recovery tests, an actual local WebSocket/HTTP protocol fixture, and desktop/mobile browser checks.
+
 The public desk contains a **recorded local example**, produced by this release engine with a fictional reviewer. It demonstrates an actual generated Git artifact, stale approval rejection and staging publication. It has no live Switch conversation or AI call. The live board requires a configured controller and team access; the public preview cannot approve or publish releases.
 
 ```sh
