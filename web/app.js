@@ -1,5 +1,6 @@
 const workspace=document.querySelector('#workspace');
 let bundle,stage='current',configuration={available:false,deployment:'preview'};
+let liveReleases=[],selectedRelease,liveMode=false,liveSnapshot='';
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clip=(value,size=12)=>value?value.slice(0,size)+'…':'Awaiting check';
 function notify(text){document.querySelector('#toast').textContent=text;setTimeout(()=>{document.querySelector('#toast').textContent='';},4000);}
@@ -16,9 +17,34 @@ async function verify(){
 }
 async function live(){
   const result=await fetch('/api/releases',{credentials:'same-origin'});const data=await result.json();if(!result.ok)throw new Error(data.error);
+  liveMode=true;liveReleases=data.releases;
+  if(!liveReleases.some(r=>r.id===selectedRelease))selectedRelease=liveReleases[0]?.id;
   document.querySelector('.example-note').textContent='Live team releases · requests and approvals are handled by your configured Switch participants.';
-  workspace.innerHTML=`<section class="live-panel"><h3>Your team’s releases</h3>${data.releases.length?data.releases.map(r=>`<article><span class="badge">${esc(r.state)}</span><h4>Revision ${r.revision}</h4><p>${esc(r.request)}</p><p>${esc(r.content.cta||'Awaiting builder')}</p><code>${esc(r.digest||'Checks pending')}</code>${r.receipt?'<a class="button primary" href="/staging/" target="_blank" rel="noopener noreferrer">View current verified staging ↗</a>':''}</article>`).join(''):'<p>Request your first release in the connected Switch room.</p>'}<p>To request work, address the builder with <code>[releaseroom] request ...</code>. The release agent asks for a full-fingerprint approval in the same room.</p><button class="button secondary" data-act="refresh-live">Refresh room releases ↻</button></section>`;
+  const snapshot=JSON.stringify([liveReleases,selectedRelease]);
+  if(snapshot!==liveSnapshot){liveSnapshot=snapshot;renderLive();}
 }
+function renderLive(){
+  const r=liveReleases.find(r=>r.id===selectedRelease);
+  if(!r){workspace.innerHTML='<section class="live-panel"><h3>Your first checked release.</h3><p>In the connected Switch room, address the builder with:</p><code>[releaseroom] request Make the invitation say Join the build night.</code><p>The builder proposes the content, the tester checks it, and the release agent asks you to approve the exact revision.</p><button class="button secondary" data-act="refresh-live">Refresh room releases ↻</button></section>';return;}
+  const previous=liveReleases.find(p=>p.revision<r.revision);
+  const current=r.revision===r.current_revision;
+  const published=liveReleases.find(p=>p.state==='published');
+  const ready=r.state==='ready'&&current;
+  const labels={proposed:'Checks pending',ready:'Ready for your review',approved:'Approved · publication pending',publishing:'Publishing',published:'Published to staging',superseded:'New revision needs approval',blocked:'Independent checks blocked'};
+  const state=labels[r.state]||r.state;
+  const tests=r.report?.tests||[];
+  const manifest=r.manifest||{};
+  const fields=[['headline','Headline'],['description','Description'],['cta','Call to action'],['background','Background'],['foreground','Text color'],['link','Destination']];
+  const command=`[releaseroom] approve ${r.id} ${r.digest}`;
+  workspace.innerHTML=`<div class="live-toolbar"><label>Review a revision<select id="live-revision">${liveReleases.map(p=>`<option value="${esc(p.id)}" ${p.id===r.id?'selected':''}>Revision ${p.revision} · ${esc(labels[p.state]||p.state)}</option>`).join('')}</select></label><button class="button secondary" data-act="refresh-live">Refresh ↻</button></div><div class="desk-grid live-desk"><aside class="room-feed"><div class="panel-heading"><span>The actual request</span><small>Revision ${r.revision}</small></div><div class="live-request"><p>${esc(r.request)}</p><small>Received ${esc(new Date(r.created*1000).toLocaleString())}</small></div><div class="panel-heading">Release handoffs</div><ol class="release-steps"><li><b class="avatar builder">B</b><span>Builder proposed content<small>Six bounded page fields</small></span></li><li><b class="avatar tester">T</b><span>${r.report?'Independent checks recorded':'Tester checks pending'}<small>${tests.filter(t=>t.passed).length}/${tests.length} checks pass</small></span></li><li><b class="avatar human">Y</b><span>${r.approval?'Human approval recorded':r.state==='superseded'?'Approval invalidated':'Human approval required'}<small>${r.approval?'Bound to this full fingerprint':'A desk login cannot approve work'}</small></span></li><li><b class="avatar ship">↗</b><span>${r.receipt?'Publication receipt recorded':'Publication awaits approval'}<small>${r.receipt?'Checked bytes published to staging':'Only the release agent publishes'}</small></span></li></ol><div class="feed-foot">Requests, agent messages and approvals happen in Switch. This desk reads the recorded release state.</div></aside><section class="release-panel"><div class="panel-heading"><span>Community page / revision ${r.revision}</span><span class="badge ${r.state==='published'?'pass':'warn'}">${esc(state)}</span></div><div class="release-body"><p class="eyebrow">Review what will ship</p><h3>${esc(r.content.headline||'Content proposal')}</h3><div class="live-content-diff">${fields.map(([field,label])=>`<div class="live-diff-row"><span>${label}</span>${previous?`<del>${esc(previous.content[field]??'Not supplied')}</del>`:''}<strong>${esc(r.content[field]??'Not supplied')}</strong></div>`).join('')}</div><p class="diff-context">${previous?`Compared with the previous proposal, revision ${previous.revision}.`:'First proposal: review all six fields.'}</p><div class="checks"><div><h4>Independent checks</h4><span>${tests.filter(t=>t.passed).length}/${tests.length} pass</span></div>${tests.length?tests.map(t=>`<div class="check-row"><i>${t.passed?'✓':'×'}</i><span>${esc(t.name.replaceAll('_',' '))}<small class="check-detail">${esc(t.detail)}</small></span><small>${t.passed?'Pass':'Blocked'}</small></div>`).join(''):'<p class="diff-context">The tester has not recorded a check report yet.</p>'}</div>${ready?`<div class="blocked"><strong>Ready for your decision in Switch.</strong><p>Review the content and checks, then send this exact command to the release agent. Approval lasts 15 minutes; a new revision needs new approval.</p><code class="approval-command">${esc(command)}</code><button class="button secondary" data-act="copy-approval">Copy approval command</button></div>`:r.state==='superseded'?'<div class="blocked"><strong>This revision cannot be approved or published.</strong><p>A later request changed the content. Select the latest revision and review its new fingerprint.</p></div>':r.receipt?'<div class="approved"><span>✓</span><div><strong>The publication receipt binds the approved artifact.</strong><p>Download the evidence to retain this revision’s request, checks and receipt.</p></div></div>':r.state==='blocked'?'<div class="blocked"><strong>Request a revised proposal in Switch.</strong><p>Failed independent checks prevent approval and publication.</p></div>':''}<div class="release-actions">${published?.id===r.id?'<a class="button primary" href="/staging/" target="_blank" rel="noopener noreferrer">View current verified staging ↗</a>':''}<button class="button secondary" data-act="download-live">Download release evidence ↓</button></div></div></section><aside class="proof-panel"><p class="eyebrow">What your yes is tied to</p><h3>The exact release.</h3><p>Changing any bound value requires a fresh review.</p><dl><dt>Git commit</dt><dd>${esc(clip(manifest.git_commit))}</dd><dt>Artifact SHA256</dt><dd>${esc(clip(manifest.artifact_sha256))}</dd><dt>Check policy</dt><dd>${esc(clip(manifest.policy_sha256))}</dd><dt>Test evidence</dt><dd>${esc(clip(manifest.test_evidence_sha256))}</dd></dl><div class="fingerprint"><span>Complete approval fingerprint</span><code>${esc(r.digest||'Awaiting independent checks')}</code></div><p class="proof-note">The publisher rechecks the actual Git objects and staging bytes. A browser integrity check verifies this record’s bindings; it does not attest the host or prove the request was understood.</p>${r.manifest?'<button class="button secondary full" data-act="verify-live">Check evidence bindings ↗</button>':''}<p id="live-integrity" role="status"></p></aside></div>`;
+}
+function download(value,name){const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+async function verifyLive(){
+  const r=liveReleases.find(p=>p.id===selectedRelease),m=r.manifest;
+  const valid=m.id===r.id&&m.revision===r.revision&&m.git_commit===r.git_commit&&await hash(stable(m))===r.digest&&await hash(stable(r.content))===m.content_sha256&&await hash(stable(r.report))===m.test_evidence_sha256&&await hash(r.request)===m.request_sha256&&(!r.approval||r.approval.digest===r.digest)&&(!r.receipt||(r.receipt.digest===r.digest&&r.receipt.artifact_sha256===m.artifact_sha256));
+  document.querySelector('#live-integrity').textContent=valid?'✓ Request, content, checks and fingerprint agree.':'The evidence does not match its recorded bindings.';
+}
+document.addEventListener('change',event=>{if(event.target instanceof HTMLSelectElement&&event.target.id==='live-revision'){selectedRelease=event.target.value;liveSnapshot='';renderLive();}});
 document.addEventListener('click',async event=>{
   if(!(event.target instanceof Element))return;
   const target=event.target.closest('[data-act]');if(!target)return;const action=target.dataset.act;
@@ -30,6 +56,9 @@ document.addEventListener('click',async event=>{
   if(action==='team')document.querySelector('#team-dialog').showModal();
   if(action==='close-team')document.querySelector('#team-dialog').close();
   if(action==='refresh-live'){try{await live();}catch(error){notify(error.message);}}
+  if(action==='download-live'){const r=liveReleases.find(p=>p.id===selectedRelease);download({schema:'releaseroom-live-evidence-v1',environment:'authenticated-controller-record',release:r},`releaseroom-revision-${r.revision}-evidence.json`);}
+  if(action==='verify-live'){try{await verifyLive();}catch{notify('Evidence integrity could not be checked in this browser.');}}
+  if(action==='copy-approval'){const r=liveReleases.find(p=>p.id===selectedRelease);try{await navigator.clipboard.writeText(`[releaseroom] approve ${r.id} ${r.digest}`);notify('Approval command copied. Send it yourself in Switch.');}catch{notify('Select and copy the displayed approval command.');}}
 });
 document.querySelector('#team-form').addEventListener('submit',async event=>{
   event.preventDefault();const form=event.currentTarget,field=form.querySelector('input');
@@ -41,6 +70,8 @@ async function start(){
   catch{document.querySelector('#connection').textContent='Connection status unavailable';}
   try{bundle=await (await fetch('/examples/reference-release.json')).json();renderReference();}
   catch{workspace.innerHTML='<div class="load-error">Recorded release evidence is unavailable. Open the repository to run the local demo.</div>';}
-  if(configuration.authenticated)await live();
+  if(configuration.available)document.querySelector('#scope-availability').textContent='The controller is connected. Open your team workspace to review live releases, then make your decision in the configured Switch room.';
+  if(configuration.authenticated){try{await live();}catch(error){notify(error.message);}}
 }
 void start();
+setInterval(()=>{if(liveMode&&!document.hidden)void live().catch(error=>notify(error.message));},8000);

@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: "22"
       - run: python3 -m pip install -r requirements.txt
-      - run: python3 -m unittest tests.test_core tests.test_protocol tests.test_setup tests.test_socket -v
+      - run: python3 -m unittest tests.test_core tests.test_protocol tests.test_setup tests.test_provider tests.test_storage tests.test_bootstrap tests.test_vps tests.test_socket -v
       - run: python3 -m releaseroom.cli demo reports/reference-release.json
       - run: python3 -m releaseroom.cli verify reports/reference-release.json
       - run: git --git-dir=/tmp/releaseroom-ci-reference/artifact.git fsck --strict

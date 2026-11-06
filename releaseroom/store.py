@@ -4,6 +4,7 @@ import os
 import sqlite3
 import time
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
 from .artifact import canonical,sha,check,render,write_commit,verify_commit,policy_hash
 
@@ -28,9 +29,14 @@ class Store:
             ''')
         os.chmod(self.db,0o600)
 
+    @contextmanager
     def connect(self):
-        db=sqlite3.connect(self.db,timeout=10,isolation_level=None);db.row_factory=sqlite3.Row
-        db.execute("PRAGMA journal_mode=WAL");return db
+        db=sqlite3.connect(self.db,timeout=10,isolation_level=None)
+        try:
+            db.row_factory=sqlite3.Row
+            db.execute("PRAGMA journal_mode=WAL")
+            with db:yield db
+        finally:db.close()
     def _event(self,db,id:str,kind:str,actor:str,data:dict):
         db.execute("INSERT INTO events(release_id,kind,actor,data,created) VALUES(?,?,?,?,?)",(id,kind,actor,canonical(data).decode(),int(self.clock())))
     def _row(self,db,id:str):

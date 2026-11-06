@@ -16,8 +16,10 @@ def settings():
     store=Store(root,reviewers,requesters or reviewers)
     profile_file=Path(os.getenv('RELEASEROOM_AGENT_FILE','.local/switch-agents.json'))
     profiles=json.loads(profile_file.read_text()) if profile_file.is_file() else {}
-    key_file=os.getenv('RELEASEROOM_VULTR_KEY_FILE')
-    builder=BuilderProvider(store,Path(key_file) if key_file else None)
+    provider=os.getenv('RELEASEROOM_MODEL_PROVIDER','vultr')
+    key_file=os.getenv('RELEASEROOM_MODEL_KEY_FILE')
+    if not key_file and provider=='vultr':key_file=os.getenv('RELEASEROOM_VULTR_KEY_FILE')
+    builder=BuilderProvider(store,Path(key_file) if key_file else None,provider,os.getenv('RELEASEROOM_MODEL'))
     return store,profiles,builder
 
 def main():
@@ -34,7 +36,7 @@ def main():
         except ValueError:ready=False
         with store.connect() as db:
             context=[{'kind':r['kind'],'actor':r['actor'],'data':json.loads(r['data'])} for r in db.execute("SELECT kind,actor,data FROM events WHERE kind LIKE 'switch_context_%' ORDER BY seq DESC LIMIT 6")]
-        print(json.dumps({'switch_profiles_ready':ready,'room_configured':bool(base and room),'model_available':builder.available,'reviewers_configured':bool(store.reviewers),'context_status':context}));return
+        print(json.dumps({'switch_profiles_ready':ready,'room_configured':bool(base and room),'model_available':builder.available,'model_provider':builder.provider,'reviewers_configured':bool(store.reviewers),'context_status':context}));return
     if args.command=='serve':
         from .server import serve
         serve(store,profiles,builder);return
