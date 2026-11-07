@@ -10,7 +10,7 @@ The useful distinction is the complete handoff: the same room carries the work a
 
 - Public [reference desk](https://releaseroom-switch.vercel.app) and [repository](https://github.com/NSEVEjk0/releaseroom-switch).
 - Backend, identity, stale-approval, tamper and recovery checks; current authenticated protocol integration; browser review flow.
-- Actual Switch/Mattermost room and three agent profiles are prepared on the operator VPS. Service readiness, genuine model-generated work and actual human approval must be confirmed before claiming the live workflow complete.
+- The actual Switch/Mattermost room, three connected agents and authenticated release desk are running on the operator VPS. Real human requests exposed a transport/participant ID mismatch, now corrected using Switch's actual client records. The first model attempt failed the JSON parser. A later genuine model draft echoed its context envelope; the operator preserved its content, corrected the format and sent it through the real tester again without another model call. Revision 2 passed all seven checks. A fresh human request then completed the corrected builder/tester/release workflow: revision 3 contains the changed invitation, passed all seven checks and superseded revision 2. The release agent posted its full-fingerprint approval command. Actual human approval and the completed recording remain required before claiming the live workflow complete.
 - The demo must show at least one actual person and agent completing real work through Switch. A scripted reference is supporting evidence only.
 - Human registration and submission by **7 November 2026, 18:29 UTC**.
 

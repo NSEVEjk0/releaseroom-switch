@@ -12,9 +12,10 @@ class Conflict(ValueError):pass
 class Forbidden(ValueError):pass
 
 class Store:
-    def __init__(self,root:Path,reviewers:set[str],requesters:set[str]|None=None,clock=time.time):
+    def __init__(self,root:Path,reviewers:set[str],requesters:set[str]|None=None,clock=time.time,sender_ids:dict[str,str]|None=None):
         self.root=root;self.root.mkdir(parents=True,exist_ok=True,mode=0o700)
         self.reviewers=reviewers;self.requesters=requesters or reviewers;self.clock=clock
+        self.sender_ids=dict(sender_ids or {})
         self.db=root/"release-room.sqlite3"
         with self.connect() as db:
             db.executescript('''

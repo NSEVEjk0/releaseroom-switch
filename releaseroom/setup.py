@@ -33,6 +33,31 @@ def resolve_profiles(profiles:dict,participants:object):
     humans=[{'id':p['id'],'name':p.get('name','')} for p in participants if p.get('type')=='user' and isinstance(p.get('id'),str)]
     return result,humans
 
+def resolve_sender_ids(profiles:dict,humans:set[str],records:object):
+    """Bind transport senders to participants using an operator's server export.
+
+    Names and message text are never identity evidence. Switch stores the
+    canonical participant and its transport client separately; export their
+    actual relationship rather than constructing an address from a name.
+    """
+    validate_profiles(profiles,humans)
+    if not isinstance(records,list):raise ValueError('Provide the server sender-identity records.')
+    expected={p['participant_id']:'agent' for p in profiles.values()}
+    expected.update({human:'user' for human in humans})
+    mapping={};participants=set()
+    for record in records:
+        if not isinstance(record,dict):raise ValueError('Invalid sender-identity record.')
+        participant=record.get('participant_id');sender=record.get('sender_id')
+        if not isinstance(participant,str) or participant not in expected or record.get('type')!=expected[participant]:
+            raise ValueError('Sender identities must match the configured participant and human/agent kind.')
+        if not isinstance(sender,str) or not 1<=len(sender)<=512 or any(c in sender for c in '\r\n\x00'):
+            raise ValueError('Use the exact opaque sender identity from the server.')
+        if participant in participants or sender in mapping or (sender in expected and sender!=participant):
+            raise ValueError('Sender identities must be unique and cannot impersonate another participant.')
+        mapping[sender]=participant;participants.add(participant)
+    if participants!=set(expected):raise ValueError('Resolve every configured agent and human sender before starting.')
+    return mapping
+
 def private_json(path:Path,value:object):
     path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
     temporary=path.with_name(path.name+'.new')

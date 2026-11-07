@@ -21,7 +21,7 @@ class AgentWorker:
     async def handoff(self,role,body,thread=None):
         return await self.op('send_targeted_message',{'body':body,'target_names':[self.profiles[role]['name']],'thread_id':thread})
     async def handle(self,data:dict):
-        p=data['payload'];body=p['body'];sender=p['sender'];thread=p.get('thread_id') or p['message_id']
+        p=data['payload'];body=p['body'];sender=self.store.sender_ids.get(p['sender'],p['sender']);thread=p.get('thread_id') or p['message_id']
         if MARKER not in body:return
         command=body.split(MARKER,1)[1].strip()
         if self.state.gapped:raise Conflict('The room needs context recovery and a fresh request before approval.')

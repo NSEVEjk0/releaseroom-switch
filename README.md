@@ -48,7 +48,7 @@ Use Python 3.12+ and install `pip install -r requirements.txt`. The integration 
 
 1. Register three agents once through your Switch administrator and add them to the same room as the human. Preserve their returned keys. Enable addressing between the configured owner’s agents and ensure human requests are addressed to the builder and approvals to the release role.
 2. Create a protected JSON file with exactly `builder`, `tester`, `release` keys. Each profile has `id` (server agent ID), `api_key`, `name` (exact room agent name), and `participant_id` (opaque room identity).
-3. Obtain the actual `list_participants` response after connecting to the room. `python3 -m releaseroom.cli resolve-profiles participants.json` resolves agent names to exact opaque IDs and lists human candidates. Choose the human’s returned `type: user` ID for `RELEASEROOM_REVIEWERS` and requesters. Do not derive IDs from display names, handles or Matrix strings.
+3. Obtain the actual `list_participants` response after connecting to the room. `python3 -m releaseroom.cli resolve-profiles participants.json` resolves agent names to exact opaque IDs and lists human candidates. Choose the human’s returned `type: user` ID for `RELEASEROOM_REVIEWERS` and requesters. Do not derive IDs from display names, handles or Matrix strings. Switch can deliver a transport sender ID that differs from the participant ID. In that case, set `RELEASEROOM_IDENTITY_FILE` to a private server export containing one `{participant_id, sender_id, type}` record for each configured agent and person. The worker validates the complete map, rejects collisions and matches the canonical participant; names and chat text never grant permission. The VPS launcher reads these actual relationships from Switch’s participant/client database records.
 4. Set the variables in `.env.example` in the service environment. Store the selected model key and team access code in private files. The builder supports NEAR AI (`z-ai/glm-5.3-flash`) and Vultr (`glm-5.3-flash`), with eight calls/day, 1,200 output tokens/call and one attempt per request. Request content leaves the controller for that configured provider when the builder runs.
 5. Run `python3 -m releaseroom.cli doctor`, then run `python3 -m releaseroom.cli serve` and `python3 -m releaseroom.cli run` as supervised processes. Serve the controller behind HTTPS and keep its state directory persistent. Set `RELEASEROOM_ORIGIN` to that exact public address.
 
@@ -58,7 +58,7 @@ In chat, address the builder with:
 [releaseroom] request Make the invitation say Join the build night.
 ```
 
-The tester and release agent exchange authenticated targeted handoffs. The release role posts the exact `approve <release-id> <full-fingerprint>` instruction to the review thread. A configured human sends that instruction to the release agent. The resulting page is available at `/staging`, with an artifact-hash response header. The desk is read-only; its access code cannot grant release authority.
+The tester and release agent exchange authenticated targeted handoffs. The release role posts the exact `approve <release-id> <full-fingerprint>` instruction to the review thread. A configured human sends that instruction to the release agent. The resulting page is available at `/staging`, with an artifact-hash response header. The desk is read-only; its access code cannot grant release authority. The model request uses JSON response mode and minimal GLM reasoning within the existing output limit. Empty or invalid proposals fail visibly without an automatic paid retry. An echoed context envelope is accepted only with an unchanged checker policy; its six content fields still go through all independent checks. Accepted provider responses leave hashes and bounded accounting metadata in the private event log, including the raw proposal hash when an envelope was normalized.
 
 ## Prepare a bounded VPS deployment
 
@@ -80,7 +80,7 @@ All services bind to loopback. Forward ports `13000` (Switch Gateway), `18000` (
 
 `python3 -m releaseroom.vps status` reports the saved configuration. Preparation creates files; a successful start is followed by an actual request, stale-approval rejection and fresh human-approved release for the demonstration. Public HTTPS exposure can then be configured with the chosen domain and exact origins.
 
-If the initial installation finished enrolling the room but stopped at service startup, run `bash infra/resume-services.sh` from the ordinary VPS root terminal. It repairs the recognized earlier working-directory syntax, verifies the installed unit links, reloads only the prepared application services and checks readiness. It does not repeat dependency installation, replace keys or reset databases. The actual human conversation remains required.
+If the initial installation finished enrolling the room but stopped at service startup, run `bash infra/resume-services.sh` from the ordinary VPS root terminal. It repairs recognized earlier quoted path directives, verifies the installed unit links, reloads the prepared application services and checks readiness. Review which services were prepared before using this shared launcher. It does not repeat dependency installation, replace keys or reset databases. The actual human conversation remains required.
 
 ## Disconnection and recovery
 

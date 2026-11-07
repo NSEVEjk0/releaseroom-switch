@@ -20,7 +20,7 @@ from urllib.request import Request, build_opener
 from .bootstrap import bootstrap
 from .http_client import NoRedirect
 from .provider import BuilderProvider, PROVIDERS
-from .setup import operator_lock, private_json, validate_profiles
+from .setup import operator_lock, private_json, resolve_sender_ids, validate_profiles
 
 PROJECT = Path(__file__).resolve().parent.parent
 GIB = 1024 ** 3
@@ -95,16 +95,17 @@ def unit_argument(value):
 
 
 def unit_working_directory(value):
-    # This directive accepts a single literal path, unlike ExecStart's word list.
+    # WorkingDirectory and EnvironmentFile accept a literal path, unlike
+    # ExecStart's word list. Use this for both path directives.
     # Surrounding quotes become part of the path and systemd rejects it.
     path = str(value)
     if not Path(path).is_absolute() or any(c in path for c in "\r\n\x00"):
-        raise ValueError("Use an absolute single-line service working directory.")
+        raise ValueError("Use an absolute single-line service path.")
     return path.replace("%", "%%")
 
 
 def repair_service_working_directories(project=PROJECT):
-    """Repair only the earlier generated directive; keep operator changes intact."""
+    """Repair recognized generated path directives; keep operator edits intact."""
     project = Path(project).resolve()
     folder = project / ".local/vps"
     config = json.loads((folder / "config.json").read_text())
@@ -117,12 +118,20 @@ def repair_service_working_directories(project=PROJECT):
         if path.is_symlink() or not path.is_file() or path.stat().st_mode & 0o077:
             raise ValueError("Use the regular private prepared service files; no service was replaced.")
         original = path.read_bytes()
-        old = ("WorkingDirectory=" + unit_argument(directory) + "\n").encode()
-        new = ("WorkingDirectory=" + unit_working_directory(directory) + "\n").encode()
-        if original.count(old) == 1:
+        replacements = [("WorkingDirectory=" + unit_argument(directory) + "\n",
+                         "WorkingDirectory=" + unit_working_directory(directory) + "\n")]
+        if name.startswith("releaseroom-"):
+            replacements.extend(("EnvironmentFile=" + unit_argument(folder / filename) + "\n",
+                                 "EnvironmentFile=" + unit_working_directory(folder / filename) + "\n")
+                                for filename in ("app.env", "runtime.env"))
+        repaired = original
+        for old, new in replacements:
+            if repaired.count(old.encode()) == 1:
+                repaired = repaired.replace(old.encode(), new.encode())
+        if repaired != original:
             if path.read_bytes() != original:
                 raise ValueError("A service file changed during repair; the operator edit was kept.")
-            private_text(path, original.replace(old, new).decode())
+            private_text(path, repaired.decode())
             changed.append(name)
     return changed
 
@@ -132,7 +141,7 @@ def service_unit(description, command, working_directory, environment_files, wri
         "[Unit]", "Description=" + description, "After=network-online.target docker.service", "Wants=network-online.target",
         "StartLimitIntervalSec=60", "StartLimitBurst=3", "", "[Service]", "Type=simple",
         "WorkingDirectory=" + unit_working_directory(working_directory),
-        *("EnvironmentFile=" + unit_argument(p) for p in environment_files),
+        *("EnvironmentFile=" + unit_working_directory(p) for p in environment_files),
         "ExecStart=" + " ".join(unit_argument(p) for p in command),
         "Restart=on-failure", "RestartSec=5", "NoNewPrivileges=true", "PrivateTmp=true", "ProtectSystem=strict",
         "ProtectHome=read-only", "ReadWritePaths=" + unit_argument(writable), "MemoryMax=" + memory,
@@ -243,6 +252,31 @@ def compose(project=PROJECT):
     folder = project / ".local/vps"
     return ["docker", "compose", "--project-name", "releaseroom-vps", "--project-directory", project,
             "--env-file", folder / "stack.env", "-f", project / "infra/vendor/switch/compose.yml", "-f", folder / "compose.override.json"]
+
+
+def configure_sender_identities(project=PROJECT):
+    """Read actual Switch client identities without guessing Matrix addresses."""
+    project = Path(project).resolve()
+    folder = project / ".local/vps"
+    profiles = json.loads((folder / "switch-agents.json").read_text())
+    evidence = json.loads((folder / "bootstrap.json").read_text())
+    validate_profiles(profiles, {evidence["reviewer_id"]})
+    sql = """SELECT json_build_object('participant_id', a.id, 'sender_id', c.matrix_user_id, 'type', 'agent')
+FROM agents a JOIN clients c ON c.id=a.client_id AND c.tenant_id=a.tenant_id
+WHERE a.id IN (SELECT jsonb_array_elements_text(:'agent_ids'::jsonb))
+UNION ALL
+SELECT json_build_object('participant_id', u.id, 'sender_id', c.matrix_user_id, 'type', 'user')
+FROM external_users u JOIN clients c ON c.id=u.client_id AND c.tenant_id=u.tenant_id
+WHERE u.id=:'reviewer_id';
+"""
+    result = run(compose(project) + ["exec", "-T", "postgres", "psql", "-U", "switch_owner", "-d", "switch",
+                 "-t", "-A", "-v", "ON_ERROR_STOP=1", "-v",
+                 "agent_ids=" + json.dumps([p["id"] for p in profiles.values()]),
+                 "-v", "reviewer_id=" + evidence["reviewer_id"]], input=sql, capture=True)
+    records = [json.loads(line) for line in result.stdout.splitlines() if line.strip()]
+    resolve_sender_ids(profiles, {evidence["reviewer_id"]}, records)
+    private_json(folder / "sender-identities.json", records)
+    return records
 
 
 def require_space(reserve=8 * GIB):
@@ -435,8 +469,10 @@ def start(project=PROJECT):
     profiles = json.loads((folder / "switch-agents.json").read_text())
     evidence = json.loads((folder / "bootstrap.json").read_text())
     validate_profiles(profiles, {evidence["reviewer_id"]})
+    configure_sender_identities(project)
     private_text(folder / "runtime.env", environment_text({"RELEASEROOM_ROOM_ID": evidence["room_id"],
-                 "RELEASEROOM_REVIEWERS": json.dumps([evidence["reviewer_id"]]), "RELEASEROOM_REQUESTERS": json.dumps([evidence["reviewer_id"]])}))
+                 "RELEASEROOM_REVIEWERS": json.dumps([evidence["reviewer_id"]]), "RELEASEROOM_REQUESTERS": json.dumps([evidence["reviewer_id"]]),
+                 "RELEASEROOM_IDENTITY_FILE": str(folder / "sender-identities.json")}))
     units = [folder / "releaseroom-desk.service", folder / "releaseroom-workers.service"]
     if config.get("shortlist"):
         units.append(folder / "shortlist.service")

@@ -9,7 +9,7 @@ from pathlib import Path
 from urllib.parse import parse_qs,urlsplit
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from websockets.asyncio.server import serve
-from releaseroom.store import Store
+from releaseroom.store import Store,Forbidden,Conflict
 from releaseroom.worker import AgentWorker
 from releaseroom.protocol import PermanentStop
 from releaseroom.artifact import DEFAULT
@@ -19,6 +19,39 @@ class SlowFixtureBuilder:
     def propose(self,request):time.sleep(2);return DEFAULT.copy()
 
 class SocketTest(unittest.IsolatedAsyncioTestCase):
+    async def test_bridged_sender_ids_preserve_handoffs_and_only_the_human_can_approve(self):
+        with tempfile.TemporaryDirectory() as folder:
+            roles=('builder','tester','release')
+            aliases={'transport-'+role:'opaque-'+role for role in roles}
+            aliases['transport-human']='opaque-human'
+            store=Store(Path(folder),{'opaque-human'},sender_ids=aliases)
+            profiles={role:{'id':role+'-server','api_key':'fixture-only','name':role,
+                            'participant_id':'opaque-'+role,'role':role} for role in roles}
+            class FixtureBuilder:
+                def propose(_,request):return {**DEFAULT,'cta':request}
+            workers={role:AgentWorker(store,profiles[role],profiles,'http://127.0.0.1:1','fixture-room',FixtureBuilder()) for role in roles}
+            replies=[]
+            def message(sender,body):return {'payload':{'sender':sender,'sender_name':'Human-looking name',
+                                        'body':body,'message_id':'fixture-message','thread_id':None}}
+            for role,worker in workers.items():
+                worker.state.connected=True;worker.state.save()
+                async def handoff(target,body,thread=None,source=role):
+                    return await workers[target].handle(message('transport-'+source,body))
+                async def reply(body,thread=None):replies.append(body)
+                worker.handoff=handoff;worker.reply=reply
+            await workers['builder'].handle(message('transport-human','[releaseroom] request First invitation'))
+            first=store.list()[0];self.assertEqual(first['state'],'ready')
+            self.assertEqual(first['requester'],'opaque-human')
+            first_command=f"[releaseroom] approve {first['id']} {first['digest']}"
+            with self.assertRaises(Forbidden):await workers['release'].handle(message('transport-builder',first_command))
+            with self.assertRaises(Forbidden):await workers['builder'].handle(message('unknown-person','[releaseroom] request Impersonation'))
+            await workers['builder'].handle(message('transport-human','[releaseroom] request New invitation'))
+            with self.assertRaises(Conflict):await workers['release'].handle(message('transport-human',first_command))
+            current=store.list()[0]
+            await workers['release'].handle(message('transport-human',f"[releaseroom] approve {current['id']} {current['digest']}"))
+            self.assertEqual(store.get(current['id'])['state'],'published')
+            self.assertTrue(any('Staging release published' in reply for reply in replies))
+
     async def test_authenticated_websocket_keeps_pongs_flowing_during_builder_work(self):
         with tempfile.TemporaryDirectory() as folder:
             store=Store(Path(folder),{'opaque-human'})

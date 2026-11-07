@@ -1,5 +1,6 @@
 import json
 import shutil
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -49,6 +50,24 @@ class VPSTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             environment_text({"KEY": "one\nOTHER=value"})
 
+    @unittest.skipUnless(shutil.which("systemd-analyze"), "systemd verifier is not installed")
+    def test_systemd_accepts_generated_environment_files_without_ignored_directives(self):
+        # systemd can return success while silently ignoring a quoted path.
+        # Check its diagnostic for this unit as well as its exit status.
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            environment = folder / "app%settings.env"
+            environment.write_text('RELEASEROOM_TEST="configured"\n')
+            unit = folder / "releaseroom-check-environment.service"
+            unit.write_text(service_unit("ReleaseRoom deployment check", ["/usr/bin/true"],
+                                         folder, [environment], folder, "64M"))
+            result = subprocess.run(["systemd-analyze", "verify", "--man=no", str(unit)],
+                                    capture_output=True, text=True)
+            diagnostics = [line for line in result.stderr.splitlines()
+                           if unit.name + ":" in line]
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertFalse(diagnostics, "\n".join(diagnostics))
+
     def test_service_repair_keeps_credentials_and_operator_edits(self):
         with tempfile.TemporaryDirectory() as temporary:
             project = self.project(temporary)
@@ -63,6 +82,9 @@ class VPSTests(unittest.TestCase):
             self.assertIn("WorkingDirectory=" + str(project) + "\n", current)
             legacy = current.replace("WorkingDirectory=" + str(project) + "\n",
                                      'WorkingDirectory="' + str(project) + '"\n')
+            for name in ("app.env", "runtime.env"):
+                path = str(folder / name)
+                legacy = legacy.replace("EnvironmentFile=" + path + "\n", 'EnvironmentFile="' + path + '"\n')
             service.write_text(legacy + "# Keep this operator comment\n")
             self.assertEqual(repair_service_working_directories(project), [service.name])
             self.assertEqual(service.read_text(), current + "# Keep this operator comment\n")

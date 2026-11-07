@@ -7,15 +7,17 @@ from .store import Store
 from .provider import BuilderProvider
 from .worker import AgentWorker
 from .demo import run,verify
-from .setup import validate_profiles,resolve_profiles,private_json,operator_lock
+from .setup import validate_profiles,resolve_profiles,resolve_sender_ids,private_json,operator_lock
 
 def settings():
     root=Path(os.getenv('RELEASEROOM_STATE_DIR','.local/state'))
     reviewers=set(json.loads(os.getenv('RELEASEROOM_REVIEWERS','[]')))
     requesters=set(json.loads(os.getenv('RELEASEROOM_REQUESTERS','[]')))
-    store=Store(root,reviewers,requesters or reviewers)
     profile_file=Path(os.getenv('RELEASEROOM_AGENT_FILE','.local/switch-agents.json'))
     profiles=json.loads(profile_file.read_text()) if profile_file.is_file() else {}
+    identity_file=os.getenv('RELEASEROOM_IDENTITY_FILE')
+    identities=resolve_sender_ids(profiles,reviewers|requesters,json.loads(Path(identity_file).read_text())) if identity_file else {}
+    store=Store(root,reviewers,requesters or reviewers,sender_ids=identities)
     provider=os.getenv('RELEASEROOM_MODEL_PROVIDER','vultr')
     key_file=os.getenv('RELEASEROOM_MODEL_KEY_FILE')
     if not key_file and provider=='vultr':key_file=os.getenv('RELEASEROOM_VULTR_KEY_FILE')
