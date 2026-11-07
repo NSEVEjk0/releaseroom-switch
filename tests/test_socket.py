@@ -46,9 +46,13 @@ class SocketTest(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(Forbidden):await workers['release'].handle(message('transport-builder',first_command))
             with self.assertRaises(Forbidden):await workers['builder'].handle(message('unknown-person','[releaseroom] request Impersonation'))
             await workers['builder'].handle(message('transport-human','[releaseroom] request New invitation'))
-            with self.assertRaises(Conflict):await workers['release'].handle(message('transport-human',first_command))
+            with self.assertRaises(Conflict):await workers['release'].handle(message('transport-human',f"[releaseroom] approve {first['id']}{first['digest']}"))
             current=store.list()[0]
-            await workers['release'].handle(message('transport-human',f"[releaseroom] approve {current['id']} {current['digest']}"))
+            with self.assertRaises(Forbidden):await workers['release'].handle(message('transport-builder',f"[releaseroom] approve{current['id']}{current['digest']}"))
+            with self.assertRaisesRegex(ValueError,'complete release ID and fingerprint'):
+                await workers['release'].handle(message('transport-human',f"[releaseroom] approve{current['id']}{current['digest'][:-1]}"))
+            self.assertEqual(store.get(current['id'])['state'],'ready')
+            await workers['release'].handle(message('transport-human',f"[releaseroom] approve{current['id']}{current['digest']}"))
             self.assertEqual(store.get(current['id'])['state'],'published')
             self.assertTrue(any('Staging release published' in reply for reply in replies))
 

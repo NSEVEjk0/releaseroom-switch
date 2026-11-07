@@ -10,6 +10,14 @@ from .store import Conflict,Forbidden
 
 MARKER='[releaseroom]'
 
+def approval_arguments(command:str):
+    # Mobile chat pastes can join the fixed-width release ID and fingerprint.
+    # Only a complete 32 + 64 lowercase-hex pair is unambiguous. Permission,
+    # revision, expiry and artifact validation still happen in the store.
+    match=re.fullmatch(r'approve\s*([a-f0-9]{32})\s*([a-f0-9]{64})',command)
+    if not match:raise ValueError('Copy the full approval command from the release agent and send one command per message. A complete release ID and fingerprint are required.')
+    return match.groups()
+
 class AgentWorker:
     def __init__(self,store,profile:dict,all_profiles:dict,base:str,room:str,builder):
         self.store=store;self.profile=profile;self.profiles=all_profiles;self.room=room;self.builder=builder
@@ -48,8 +56,8 @@ class AgentWorker:
             _,id,digest=command.split();release=self.store.get(id)
             if release['state']!='ready' or digest!=release['digest']:raise Conflict('The checked release has been superseded.')
             await self.reply('Ready for human review. Revision '+str(release['revision'])+', commit '+release['git_commit']+'.\nArtifact SHA256 '+release['manifest']['artifact_sha256']+'\nApprove this exact release with:\n'+MARKER+' approve '+id+' '+digest+'\nApproval expires after 15 minutes and any content change requires new approval.',thread)
-        elif self.role=='release' and re.fullmatch(r'approve [a-f0-9]{32} [a-f0-9]{64}',command):
-            _,id,digest=command.split();await asyncio.to_thread(self.store.approve,id,digest,sender)
+        elif self.role=='release' and command.startswith('approve'):
+            id,digest=approval_arguments(command);await asyncio.to_thread(self.store.approve,id,digest,sender)
             receipt=await asyncio.to_thread(self.store.publish,id)
             await self.reply('Staging release published: revision '+str(receipt['revision'])+'; artifact '+receipt['artifact_sha256']+'. The staging view serves only this fingerprint.',thread)
     async def pending(self):

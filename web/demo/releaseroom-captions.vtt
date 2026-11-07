@@ -1,0 +1,58 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:02.984
+ReleaseRoom helps teams turn a chat request into a
+
+00:00:02.984 --> 00:00:05.304
+webpage change they can inspect and approve.
+
+00:00:06.000 --> 00:00:09.442
+The builder proposes six content fields. The independent tester
+
+00:00:09.442 --> 00:00:12.885
+checks text, colors, contrast and destination, then pins a
+
+00:00:12.885 --> 00:00:13.650
+Git artifact.
+
+00:00:14.000 --> 00:00:17.078
+Here, the reviewer changes the invitation to join a
+
+00:00:17.078 --> 00:00:18.104
+community build night.
+
+00:00:19.000 --> 00:00:22.652
+Revision three records the new content and passes all
+
+00:00:22.652 --> 00:00:23.464
+seven checks.
+
+00:00:24.000 --> 00:00:26.993
+The old approval is rejected. It names a revision
+
+00:00:26.993 --> 00:00:28.656
+that has already been superseded.
+
+00:00:30.000 --> 00:00:33.192
+The human's current approval names the complete fingerprint. The
+
+00:00:33.192 --> 00:00:36.384
+release agent rechecks it and publishes the checked bytes.
+
+00:00:38.000 --> 00:00:41.632
+Staging shows the revised invitation. Its HTML matches the
+
+00:00:41.632 --> 00:00:43.650
+exact artifact approved in Switch.
+
+00:00:44.000 --> 00:00:47.178
+Download the request, checks and publication receipt. The evidence
+
+00:00:47.178 --> 00:00:49.650
+binds the content, fingerprint and Git commit.
+
+00:00:50.000 --> 00:00:53.219
+Request a change, review the checks, approve the exact
+
+00:00:53.219 --> 00:00:54.650
+release. Explore the source.

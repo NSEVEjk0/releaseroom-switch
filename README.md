@@ -10,11 +10,31 @@ Useful for community landing pages, launch teams and internal announcements wher
 
 A team approves one version in chat, then a later edit changes what the agent publishes. ReleaseRoom makes that mismatch observable and blocks it: builder, independent tester and release agent exchange work through Switch, while a human approves the full fingerprint of the reviewed revision. The live desk shows all six content fields, checks, revision history and downloadable evidence; it copies an approval command without sending it on the human's behalf.
 
-## Try the recorded example
+## See the completed Switch workflow
 
-Open the [ReleaseRoom desk](https://releaseroom-switch.vercel.app). The [verification run](https://github.com/NSEVEjk0/releaseroom-switch/actions/runs/41949436382) includes state/recovery tests, an actual local WebSocket/HTTP protocol fixture, and desktop/mobile browser checks.
+Watch the [55-second narrated demo](https://releaseroom-switch.vercel.app/#demo), [download the MP4](https://releaseroom-switch.vercel.app/demo/releaseroom-demo.mp4), inspect the [live release evidence](web/demo/live-release-evidence.json), or open the [recorded approved page](https://releaseroom-switch.vercel.app/demo/approved-site.html). English captions are available in the player and [as a VTT file](web/demo/releaseroom-captions.vtt). The [CI workflow](https://github.com/NSEVEjk0/releaseroom-switch/actions/workflows/verify.yml) runs the backend, protocol and browser checks.
 
-The public desk contains a **recorded local example**, produced by this release engine with a fictional reviewer. It demonstrates an actual generated Git artifact, stale approval rejection and staging publication. It has no live Switch conversation or AI call. The live board requires a configured controller and team access; the public preview cannot approve or publish releases.
+The demonstration was completed on 7 November 2026 using a real self-hosted Switch/Mattermost room, three separately authenticated agents, NEAR AI `z-ai/glm-5.3-flash`, and the user's genuine chat requests and approvals. A human changed “Join the build night” to “Join the community build night”; revision 3 passed all seven independent checks. The release agent rejected the old approval, accepted the actual person's current full-fingerprint command, and published staging HTML whose SHA256 matched the reviewed artifact.
+
+Switch carries the authenticated request, builder-to-tester handoff, tester-to-release handoff and human decision in the same room. [The worker](releaseroom/worker.py) uses targeted messages and actual participant identities; [the current protocol adapter](releaseroom/protocol.py) preserves connection state and durable addressed messages. Without that room transport, this team workflow cannot receive its request or human approval. [The store](releaseroom/store.py) independently binds and rechecks the artifact before publication.
+
+The public page opens without an account. Watch the completed workflow, try the release desk, and download its checked artifact and evidence.
+
+## Try the release desk
+
+Open the [release desk](https://releaseroom-switch.vercel.app/#desk). The interactive example lets you inspect the change, try an earlier approval, verify the evidence and open the approved page. Its fixed inputs run through the release engine; the completed Switch workflow is shown in the video above.
+
+The actual reviewed artifact has its own Git repository: [download its bundle](web/demo/approved-artifact.bundle). Its commit `c799564b92ad06704a670cf6663d96c68bb19959` is the content artifact's commit, separate from this application's source commits. After cloning this application, inspect it with:
+
+```sh
+git clone web/demo/approved-artifact.bundle /tmp/releaseroom-recorded-artifact
+git -C /tmp/releaseroom-recorded-artifact fsck --strict
+git -C /tmp/releaseroom-recorded-artifact show c799564b92ad06704a670cf6663d96c68bb19959:index.html | sha256sum
+```
+
+Expected HTML SHA256: `f7e39ce85cfc20820fd5b9b4f361a6afa70de820dc82bdda29ce5261909393a4`. Public evidence contains observed controller records with opaque participant identities withheld; it is not an independent signature or host attestation.
+
+For a new model-free engine reference:
 
 ```sh
 python3 -m unittest tests.test_core tests.test_protocol tests.test_setup -v
@@ -58,7 +78,7 @@ In chat, address the builder with:
 [releaseroom] request Make the invitation say Join the build night.
 ```
 
-The tester and release agent exchange authenticated targeted handoffs. The release role posts the exact `approve <release-id> <full-fingerprint>` instruction to the review thread. A configured human sends that instruction to the release agent. The resulting page is available at `/staging`, with an artifact-hash response header. The desk is read-only; its access code cannot grant release authority. The model request uses JSON response mode and minimal GLM reasoning within the existing output limit. Empty or invalid proposals fail visibly without an automatic paid retry. An echoed context envelope is accepted only with an unchanged checker policy; its six content fields still go through all independent checks. Accepted provider responses leave hashes and bounded accounting metadata in the private event log, including the raw proposal hash when an envelope was normalized.
+The tester and release agent exchange authenticated targeted handoffs. The release role posts the exact `approve <release-id> <full-fingerprint>` instruction to the review thread. A configured human sends that instruction to the release agent. Mobile pastes may omit spaces between `approve`, the complete 32-character release ID and the 64-character fingerprint; the worker parses those fixed widths without changing authority or release checks. Truncated or ambiguous commands receive feedback. The resulting page is available at `/staging`, with an artifact-hash response header. The desk is read-only; its access code cannot grant release authority. The model request uses JSON response mode and minimal GLM reasoning within the existing output limit. Empty or invalid proposals fail visibly without an automatic paid retry. An echoed context envelope is accepted only with an unchanged checker policy; its six content fields still go through all independent checks. Accepted provider responses leave hashes and bounded accounting metadata in the private event log, including the raw proposal hash when an envelope was normalized.
 
 ## Prepare a bounded VPS deployment
 
@@ -67,14 +87,14 @@ The launcher uses the pinned Switch 0.31.0 deployment contract, bundled Mattermo
 From this repository, prepare with a private file containing `NEAR_AI_API_KEY` and optionally `NEAR_AI_MODEL`:
 
 ```sh
-python3 -m releaseroom.vps prepare --model-env /path/to/private-model.env --shortlist ../shortlist
+python3 -m releaseroom.vps prepare --model-env /path/to/private-model.env
 python3 -m releaseroom.vps preflight
 python3 -m releaseroom.vps start
 ```
 
-Omit `--shortlist` for ReleaseRoom alone. For a standalone Vultr model key file, use `--model-key /path/to/private-key.txt --provider vultr` instead of `--model-env`. This provider choice applies to ReleaseRoom; ReproLab retains its own mandatory Vultr hosting and inference requirements.
+Add `--shortlist ../shortlist` only when intentionally preparing that optional sibling. For a standalone Vultr model key file, use `--model-key /path/to/private-key.txt --provider vultr` instead of `--model-env`.
 
-Run `start` from the ordinary VPS root terminal with Docker Compose and systemd available. The launcher checks model access without generation, inspects image sizes before pulling, reserves 8 GiB of free disk plus a dependency allowance, requires 1 GiB of available RAM and applies container/process memory and log limits. It runs backend checks and Shortlist's isolated database, build and browser checks before enabling application services. Failed checks stop launch. Actual startup and a real human demonstration still need verification on the host.
+Run `start` from the ordinary VPS root terminal with Docker Compose and systemd available. The launcher checks model access without generation, inspects image sizes before pulling, reserves 8 GiB of free disk plus a dependency allowance, requires 1 GiB of available RAM and applies container/process memory and log limits. It runs backend checks and, when selected, Shortlist's isolated database, build and browser checks before enabling application services. Failed checks stop launch. These launch checks are followed by observing the actual human/agent workflow on that host; the linked November 7 recording documents the completed operator deployment.
 
 All services bind to loopback. Forward ports `13000` (Switch Gateway), `18000` (Switch API), `18065` (Mattermost), `18090` (ReleaseRoom desk) and optionally `18173` (Shortlist) over SSH, using the same local port numbers. Open the corresponding `http://localhost:<port>` addresses. Gateway and Mattermost login values are in the private `operator.json`; the desk access code is in `team-access.txt`. The launcher resolves reviewer IDs from real authenticated room participants after messaging setup completes.
 
@@ -100,6 +120,10 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-The current scope is **bounded site-content staging**, not arbitrary repository changes or production infrastructure deployment. A completed Switch hackathon demonstration still needs a real authenticated person/agent conversation and configured model/controller. MIT applies to ReleaseRoom’s own code; Switch and provider services retain their own terms.
+The current scope is **bounded site-content staging**, not arbitrary repository changes or production infrastructure deployment. The recorded Switch workflow is complete. The public preview keeps live room access private; deploying your own controller requires your own configured room, reviewer and provider. MIT applies to ReleaseRoom's own code; Switch and provider services retain their own terms.
 
-See [submission and demo preparation](SUBMISSION.md) for the real human workflow, recording outline and remaining entry steps.
+## Recording and operation notes
+
+The recording shortens waiting and adds synthetic narration. Setup exposed a transport/participant identity mismatch; an initial model envelope needed normalization; mobile pastes joined the approval fields. Those fixes and operator recovery are [explicitly documented](web/demo/recording.json). The initial draft's model-generated content and checker policy were preserved; the current revised request then ran normally. Original human approval messages were reprocessed unchanged by the real release agent while recent. No human request or approval was automated. Three model calls were used, including the initial JSON failure, within the unchanged eight/day limit.
+
+See [submission materials](SUBMISSION.md) for the entry draft, working links, disclosures and the human submission step.

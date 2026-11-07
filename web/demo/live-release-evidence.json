@@ -1,0 +1,157 @@
+{
+  "schema": "releaseroom-observed-live-release-v1",
+  "environment": "real-self-hosted-Switch-and-Mattermost",
+  "observed_at": 1794055383,
+  "sample_announcement_content": true,
+  "human_chat_actions_automated": false,
+  "release": {
+    "id": "56c44ae0d7674c539eb7e01788c80292",
+    "revision": 3,
+    "request": "Make the invitation say Join the community build\n  night. Keep the page readable and use dark text on a light background",
+    "content": {
+      "background": "#eff3e9",
+      "cta": "Join the community build night",
+      "description": "A friendly place for people building something new.",
+      "foreground": "#17382e",
+      "headline": "Make room for your next idea.",
+      "link": "#join"
+    },
+    "state": "published",
+    "created": 1794054303,
+    "report": {
+      "passed": true,
+      "policy_hash": "a5ea4af3fac31204a7a60b64a7ea5100d6ce1453cf0f6aa386a0a7acf2cef3f7",
+      "tests": [
+        {
+          "detail": "Only the six site-content fields are accepted.",
+          "name": "exact_content_schema",
+          "passed": true
+        },
+        {
+          "detail": "1\u201390 nonempty characters.",
+          "name": "headline_length",
+          "passed": true
+        },
+        {
+          "detail": "1\u2013240 nonempty characters.",
+          "name": "description_length",
+          "passed": true
+        },
+        {
+          "detail": "1\u201340 nonempty characters.",
+          "name": "cta_length",
+          "passed": true
+        },
+        {
+          "detail": "Two literal six-digit hex colors.",
+          "name": "hex_colors",
+          "passed": true
+        },
+        {
+          "detail": "WCAG contrast ratio 11.372; minimum 4.5.",
+          "name": "text_contrast",
+          "passed": true
+        },
+        {
+          "detail": "CTA stays at a supported local destination.",
+          "name": "fixed_destination",
+          "passed": true
+        }
+      ]
+    },
+    "manifest": {
+      "artifact_sha256": "f7e39ce85cfc20820fd5b9b4f361a6afa70de820dc82bdda29ce5261909393a4",
+      "content_sha256": "5a97050f35bd046a8b39aaa10b14b428482a99366d4ae54f323f02906a2c5514",
+      "git_commit": "c799564b92ad06704a670cf6663d96c68bb19959",
+      "id": "56c44ae0d7674c539eb7e01788c80292",
+      "policy_sha256": "a5ea4af3fac31204a7a60b64a7ea5100d6ce1453cf0f6aa386a0a7acf2cef3f7",
+      "request_sha256": "ec61c40c1732b17641c1719a956c2c722fe218df07778ec30bff47e048624e19",
+      "revision": 3,
+      "schema": "releaseroom-release-v1",
+      "test_evidence_sha256": "6b02f85b26335c27da6b81257569239f2af7f20fcf56a7c35e826b79e2dc4821"
+    },
+    "digest": "ad2672d7579d2bd67e1a4b9650952ae9c2ae60ea5e5c2620d1e5adb3dc619433",
+    "git_commit": "c799564b92ad06704a670cf6663d96c68bb19959",
+    "receipt": {
+      "artifact_sha256": "f7e39ce85cfc20820fd5b9b4f361a6afa70de820dc82bdda29ce5261909393a4",
+      "digest": "ad2672d7579d2bd67e1a4b9650952ae9c2ae60ea5e5c2620d1e5adb3dc619433",
+      "git_commit": "c799564b92ad06704a670cf6663d96c68bb19959",
+      "published_at": 1794055314,
+      "release_id": "56c44ae0d7674c539eb7e01788c80292",
+      "revision": 3
+    },
+    "approval": {
+      "digest": "ad2672d7579d2bd67e1a4b9650952ae9c2ae60ea5e5c2620d1e5adb3dc619433",
+      "approved_at": 1794055314,
+      "expires_at": 1794056214,
+      "actor_type": "configured-human-reviewer"
+    },
+    "current_revision": 3
+  },
+  "artifact": "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Make room for your next idea.</title><style>body{margin:0;background:#eff3e9;color:#17382e;font-family:system-ui,sans-serif}main{max-width:850px;margin:12vh auto;padding:35px}h1{font-size:clamp(40px,7vw,72px);line-height:1.08;letter-spacing:-.05em}p{font-size:20px;line-height:1.6;max-width:580px}a{display:inline-block;color:inherit;border:1px solid;padding:15px 23px;margin-top:20px;border-radius:8px;text-decoration:none}</style></head><body><main><p>THE COMMUNITY / NEXT CHAPTER</p><h1>Make room for your next idea.</h1><p>A friendly place for people building something new.</p><a href=\"#join\">Join the community build night \u2197</a><p id=\"join\" style=\"font-size:12px;margin-top:60px\">ReleaseRoom staging fixture. This page does not collect registrations.</p></main></body></html>",
+  "superseded_release": {
+    "id": "2f1656dd38e34d679b900658c728a908",
+    "revision": 2,
+    "content": {
+      "background": "#eff3e9",
+      "cta": "Join the build night",
+      "description": "A friendly place for people building something new.",
+      "foreground": "#17382e",
+      "headline": "Make room for your next idea.",
+      "link": "#join"
+    },
+    "state": "superseded",
+    "digest": "2aa6f7ef625116d81fe8009a73c9e7538ea8b80ebac86574761179ea23d41316",
+    "git_commit": "6165eaf0bfab476b371e4e26e0d4e2853f44b5dd"
+  },
+  "human_approval_message": {
+    "command_after_marker": "approve56c44ae0d7674c539eb7e01788c80292ad2672d7579d2bd67e1a4b9650952ae9c2ae60ea5e5c2620d1e5adb3dc619433",
+    "received_at_ms": 1794054721039,
+    "processed_at": 1794055314,
+    "authenticated_sender_matched_configured_human": true,
+    "original_message_reprocessed_unchanged": true
+  },
+  "provider_response_receipt": {
+    "configured_model": "z-ai/glm-5.3-flash",
+    "content_sha256": "5a97050f35bd046a8b39aaa10b14b428482a99366d4ae54f323f02906a2c5514",
+    "endpoint": "https://cloud-api.near.ai/v1/chat/completions",
+    "finish_reason": "stop",
+    "provider": "nearai",
+    "request_sha256": "ec61c40c1732b17641c1719a956c2c722fe218df07778ec30bff47e048624e19",
+    "response_id": "a216c608b0ba44929548c208ae5a6c9a",
+    "response_model": "z-ai/glm-5.3-flash",
+    "response_sha256": "67a9f4a94f28b70c7371317a880c729406f3e2b7cc6826bb1047ade9f15dc680",
+    "usage": {
+      "completion_tokens": 59,
+      "prompt_tokens": 228,
+      "total_tokens": 287
+    }
+  },
+  "daily_model_usage": [
+    {
+      "day": "2026-11-07",
+      "used": 3
+    }
+  ],
+  "model_limits": {
+    "calls_per_day": 8,
+    "output_tokens_per_call": 1200,
+    "attempts_per_request": 1
+  },
+  "verification": {
+    "manifest_fingerprint_verified": true,
+    "request_content_checks_and_artifact_verified": true,
+    "staging_body_sha256": "f7e39ce85cfc20820fd5b9b4f361a6afa70de820dc82bdda29ce5261909393a4",
+    "staging_response_artifact_header": "f7e39ce85cfc20820fd5b9b4f361a6afa70de820dc82bdda29ce5261909393a4",
+    "stale_approval_rejected": true,
+    "actual_human_approval_recorded": true,
+    "actual_release_agent_publication_recorded": true
+  },
+  "operator_recovery": [
+    "Switch transport identities mapped using actual participant/client records.",
+    "Initial context-envelope proposal normalized without changing model-generated fields or checker policy and sent through actual Switch handoffs.",
+    "Mobile paste parser corrected; original human approval messages requeued unchanged, in arrival order, while still recent. The actual release agent rejected the superseded approval and processed the current one."
+  ],
+  "disclosure": "Observed controller records and approved page artifacts. Opaque participant identities and raw room history are withheld. The record includes the original human decision, provider receipt, release checks and operator recovery. It is a controller observation rather than an independent signature or host attestation.",
+  "payload_sha256": "8c7a7c7abac6ac3a9c526ca17170a3cf25451a360d1c04bb50e0f606c154ddcc"
+}

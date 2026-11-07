@@ -1,0 +1,122 @@
+{
+  "schema": "releaseroom-live-recording-v1",
+  "completed": true,
+  "duration_seconds": 55.021333,
+  "recorded_on": "2026-11-07",
+  "source_environment": "real-self-hosted-Switch-and-Mattermost",
+  "human_chat_actions_automated": false,
+  "sample_announcement_content": true,
+  "current_release_id": "56c44ae0d7674c539eb7e01788c80292",
+  "revision": 3,
+  "artifact_sha256": "f7e39ce85cfc20820fd5b9b4f361a6afa70de820dc82bdda29ce5261909393a4",
+  "mp4_sha256": "7b423bc98c7779dcacb36467f9e4f875f072b455f0649e03a18a7a06c6b1b23a",
+  "narration": "Synthetic voice added with Microsoft Edge TTS; audible AAC audio and English captions.",
+  "editing": "Genuine room history and desk captures edited to 55 seconds. Waiting removed, some motion retimed, actual desk screenshots held for the checks and closing scenes, and staging framed around its content. No additional generation, request or approval was made for this film.",
+  "operator_recovery": [
+    "Switch transport identities mapped using actual participant/client records.",
+    "Initial context-envelope proposal normalized without changing model-generated fields or checker policy and sent through actual Switch handoffs.",
+    "Mobile paste parser corrected; original human approval messages requeued unchanged, in arrival order, while still recent. The actual release agent rejected the superseded approval and processed the current one."
+  ],
+  "limitations": "Content staging and demonstration copy; deterministic tester and release roles share the controlled host. Hashes bind bytes, not request meaning or an independent host attestation.",
+  "scenes": [
+    {
+      "name": "A request in the team room",
+      "source_kind": "actual-screen-recording",
+      "source_sha256": "3cf4c74ce0fec59e8084e62eb7adf148664407847834ac28ea12a549b84d27dc",
+      "source_start_seconds": 10.210365132,
+      "source_end_seconds": 18.4,
+      "film_start_seconds": 0.0,
+      "film_seconds": 6,
+      "speech_seconds": 5.304,
+      "narration": "ReleaseRoom helps teams turn a chat request into a webpage change they can inspect and approve."
+    },
+    {
+      "name": "A pinned artifact and independent checks",
+      "source_kind": "actual-browser-screenshot",
+      "source_sha256": "4ba620bf8d044f3545e635e02ab462530d28cd31f3f073554f8c14e2ef6b0baf",
+      "source_start_seconds": null,
+      "source_end_seconds": null,
+      "film_start_seconds": 6.0,
+      "film_seconds": 8,
+      "speech_seconds": 7.65,
+      "narration": "The builder proposes six content fields. The independent tester checks text, colors, contrast and destination, then pins a Git artifact."
+    },
+    {
+      "name": "The human changes the invitation",
+      "source_kind": "actual-screen-recording",
+      "source_sha256": "40031ce1fa56d8c6d814bbe1459b1be3ef776088d75b771f0b01b0539d25a412",
+      "source_start_seconds": 9.163833373000001,
+      "source_end_seconds": 15.9,
+      "film_start_seconds": 14.0,
+      "film_seconds": 5,
+      "speech_seconds": 4.104,
+      "narration": "Here, the reviewer changes the invitation to join a community build night."
+    },
+    {
+      "name": "Revision 3 passes all seven checks",
+      "source_kind": "actual-screen-recording",
+      "source_sha256": "7d8d0af030acd684ff3515253fd49719cf87fd0b5289b09fa2e16a5f69f9556c",
+      "source_start_seconds": 0.722306907000002,
+      "source_end_seconds": 6.5,
+      "film_start_seconds": 19.0,
+      "film_seconds": 5,
+      "speech_seconds": 4.464,
+      "narration": "Revision three records the new content and passes all seven checks."
+    },
+    {
+      "name": "The superseded approval is rejected",
+      "source_kind": "actual-screen-recording",
+      "source_sha256": "14f3cb5c33ad96e15cbe37db7665ebf4244bfef732d18871e43ba09403fda522",
+      "source_start_seconds": 5.60068606,
+      "source_end_seconds": 12.35,
+      "film_start_seconds": 24.0,
+      "film_seconds": 6,
+      "speech_seconds": 4.656,
+      "narration": "The old approval is rejected. It names a revision that has already been superseded."
+    },
+    {
+      "name": "The actual human approval and release reply",
+      "source_kind": "actual-screen-recording",
+      "source_sha256": "3fdc6edd943d692e1987943e6a551406c84da86e56b4d1c3c1f60f304608f78a",
+      "source_start_seconds": 6.508349806999998,
+      "source_end_seconds": 13.35,
+      "film_start_seconds": 30.0,
+      "film_seconds": 8,
+      "speech_seconds": 6.384,
+      "narration": "The human's current approval names the complete fingerprint. The release agent rechecks it and publishes the checked bytes."
+    },
+    {
+      "name": "Verified staging serves the approved HTML",
+      "source_kind": "actual-screen-recording",
+      "source_sha256": "1f8795e746239589d2b983f6d06ea9405ac89d698b4394be3ac27588f2c0738e",
+      "source_start_seconds": 0.16374370599999383,
+      "source_end_seconds": 8.1,
+      "film_start_seconds": 38.0,
+      "film_seconds": 6,
+      "speech_seconds": 5.65,
+      "narration": "Staging shows the revised invitation. Its HTML matches the exact artifact approved in Switch."
+    },
+    {
+      "name": "Download the request, checks and receipt",
+      "source_kind": "actual-screen-recording",
+      "source_sha256": "2f2521fae6618208e30ebea5392d12cfcb4a6fd5007959bf217a5cf9926fdb05",
+      "source_start_seconds": 0.40143025400000626,
+      "source_end_seconds": 6.2,
+      "film_start_seconds": 44.0,
+      "film_seconds": 6,
+      "speech_seconds": 5.65,
+      "narration": "Download the request, checks and publication receipt. The evidence binds the content, fingerprint and Git commit."
+    },
+    {
+      "name": "github.com/NSEVEjk0/releaseroom-switch",
+      "source_kind": "actual-browser-screenshot",
+      "source_sha256": "f5960bc4237a9912abfd5887e91b2a95f52f131a2e8dab253eb8c2e71bd5256a",
+      "source_start_seconds": null,
+      "source_end_seconds": null,
+      "film_start_seconds": 50.0,
+      "film_seconds": 5,
+      "speech_seconds": 4.65,
+      "narration": "Request a change, review the checks, approve the exact release. Explore the source."
+    }
+  ]
+}
